@@ -5,6 +5,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+import javax.validation.Valid;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -17,6 +19,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.util.UriComponents;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import de.fiducia.first.controllers.dtos.PersonDTO;
 
@@ -70,9 +74,17 @@ public class DemoController {
 	}
 	
 	@PutMapping(path="/person", consumes =  MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<Void> save(@RequestBody PersonDTO person) { 
+	public ResponseEntity<Void> save(@Valid @RequestBody PersonDTO person) { 
 		System.out.println(person + " wird gespeichert!");
 		return ResponseEntity.status(HttpStatus.CREATED).build();
+	}
+
+	@PostMapping(path="/person", consumes =  MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<Void> saveNotIdempotent(@RequestBody PersonDTO person, UriComponentsBuilder b) { 
+		person.setId(UUID.randomUUID().toString());
+		UriComponents uriComponents = b.path("personen/person/{id}").buildAndExpand(person.getId());
+		System.out.println(person + " wird gespeichert!");
+		return ResponseEntity.created(uriComponents.toUri()).build();
 	}
 
 }
