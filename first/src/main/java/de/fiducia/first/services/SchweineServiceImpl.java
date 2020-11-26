@@ -1,4 +1,4 @@
-package de.fiducia.first.services.model;
+package de.fiducia.first.services;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -10,9 +10,10 @@ import org.springframework.transaction.annotation.Transactional;
 import de.fiducia.first.repositories.SchweinRepository;
 import de.fiducia.first.repositories.entities.SchweinEntity;
 import de.fiducia.first.services.mappers.SchweinEntityMapper;
+import de.fiducia.first.services.model.Schwein;
 
 @Service
-@Transactional
+@Transactional(rollbackFor = SchweineServiceException.class)
 public class SchweineServiceImpl implements SchweinService {
 
 	private final SchweinRepository repository;
@@ -25,16 +26,22 @@ public class SchweineServiceImpl implements SchweinService {
 	
 	
 	@Override
-	public void speichern(Schwein schwein) {
-		repository.save(mapper.convert(schwein));
+	public void speichern(Schwein schwein)  throws SchweineServiceException{
+		try {
+			repository.save(mapper.convert(schwein));
+		} catch (RuntimeException e) {
+			
+			e.printStackTrace();
+			throw new SchweineServiceException(e);
+		}
 	}
 	
 	@Override
-	public Optional<Schwein> findeMitId(String id) {
+	public Optional<Schwein> findeMitId(String id) throws SchweineServiceException{
 		return repository.findById(id).map(mapper::convert);
 	}
 	@Override
-	public List<Schwein> findeAlle() {
+	public List<Schwein> findeAlle() throws SchweineServiceException{
 		List<SchweinEntity> liste = new ArrayList<>();
 		repository.findAll().iterator().forEachRemaining(liste::add);
 		return mapper.convert(liste);
@@ -42,14 +49,14 @@ public class SchweineServiceImpl implements SchweinService {
 	
 	// Query
 	@Override
-	public Schwein fuettern(Schwein schwein) {
+	public Schwein fuettern(Schwein schwein) throws SchweineServiceException{
 		schwein.fressen();
 		return schwein;
 	}
 	
 	// Command
 	@Override
-	public boolean fuettern(String id) {
+	public boolean fuettern(String id) throws SchweineServiceException{
 		Optional<SchweinEntity> schweinEntityOptinal = repository.findById(id);
 		if(! schweinEntityOptinal.isPresent()) return false;
 		

@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import de.fiducia.first.controllers.dtos.SchweinDTO;
 import de.fiducia.first.controllers.mapper.SchweinDTOMapper;
-import de.fiducia.first.services.model.SchweinService;
+import de.fiducia.first.services.SchweinService;
 
 @RestController
 @RequestMapping("/schweine")
@@ -27,11 +27,11 @@ public class SchweinQueryController {
 	
 	
 	@GetMapping(path = "/schwein/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<SchweinDTO> findSchweinBy(@PathVariable String id) {
+	public ResponseEntity<SchweinDTO> findSchweinBy(@PathVariable String id) throws Exception{
 		return ResponseEntity.of(service.findeMitId(id).map(mapper::convert));
 	}
 	@GetMapping(path = "", produces = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<List<SchweinDTO>> findeAlle() {
+	public ResponseEntity<List<SchweinDTO>> findeAlle() throws Exception{
 		return ResponseEntity.ok(mapper.convert(service.findeAlle()));
 	}
 	
