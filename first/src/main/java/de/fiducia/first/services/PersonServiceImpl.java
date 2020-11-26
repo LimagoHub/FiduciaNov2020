@@ -1,5 +1,8 @@
 package de.fiducia.first.services;
 
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -15,17 +18,20 @@ public class PersonServiceImpl implements PersonService {
 
 	private final PersonRepository personRepository;
 	private final PersonDTOMapper mapper;
+	private final List<String> antipathen;
 
-	public PersonServiceImpl(final PersonRepository personRepository, final PersonDTOMapper mapper) {
+	public PersonServiceImpl(final PersonRepository personRepository, final PersonDTOMapper mapper,@Qualifier("antipathen") final List<String> antipathen) {
 		this.personRepository = personRepository;
 		this.mapper = mapper;
+		this.antipathen = antipathen;
+		System.out.println(antipathen);
 	}
 	
 	
 	@Override
 	public boolean speichern(PersonDTO person) throws PersonServiceException {
 		try {
-			if("Attila".equals(person.getVorname()))
+			if(antipathen.contains(person.getVorname()))
 				throw new PersonServiceException("Antipath");
 			
 			boolean retval = personRepository.existsById(person.getId());
