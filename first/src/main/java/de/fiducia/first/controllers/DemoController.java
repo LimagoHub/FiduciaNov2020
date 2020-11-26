@@ -19,16 +19,27 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.context.annotation.RequestScope;
 import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import de.fiducia.first.controllers.dtos.PersonDTO;
+import de.fiducia.first.services.PersonService;
 
 @RestController
 @RequestMapping("/personen")
+@RequestScope
 public class DemoController {
 	
 	
+	private final PersonService personService;
+	
+	
+	public DemoController(final PersonService personService) {
+		
+		this.personService = personService;
+	}
+
 	@GetMapping(path="/gruss", produces = MediaType.TEXT_PLAIN_VALUE)
 	public String gruss() {
 		return "Hallo Rest";
@@ -74,8 +85,10 @@ public class DemoController {
 	}
 	
 	@PutMapping(path="/person", consumes =  MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<Void> save(@Valid @RequestBody PersonDTO person) { 
-		System.out.println(person + " wird gespeichert!");
+	public ResponseEntity<Void> save(@Valid @RequestBody PersonDTO person) throws Exception{ 
+		if(personService.speichern(person)) {
+			return ResponseEntity.status(HttpStatus.OK).build();
+		}
 		return ResponseEntity.status(HttpStatus.CREATED).build();
 	}
 
