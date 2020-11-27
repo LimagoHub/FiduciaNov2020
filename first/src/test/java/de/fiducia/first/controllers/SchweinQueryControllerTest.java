@@ -2,19 +2,23 @@ package de.fiducia.first.controllers;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mockito;
+import org.mockito.internal.verification.Times;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -24,6 +28,7 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import de.fiducia.first.controllers.dtos.SchweinDTO;
 import de.fiducia.first.services.SchweinService;
+import de.fiducia.first.services.SchweineServiceException;
 import de.fiducia.first.services.model.Schwein;
 
 @ActiveProfiles("test")
@@ -93,5 +98,34 @@ public class SchweinQueryControllerTest {
 		
 		List<SchweinDTO> schweineListe = entity.getBody();
 		assertEquals(2, schweineListe.size());
+	}
+	
+	@Test
+	public void test5() throws Exception{
+		
+		SchweinDTO dto = SchweinDTO.builder().id("012345678901234567890123456789111112").name("Piggy").gewicht(10).build();
+		HttpEntity<SchweinDTO> httpEntity = new HttpEntity<SchweinDTO>(dto);
+		
+		ResponseEntity<Void> entity = restTemplate.exchange("/schweine", HttpMethod.PUT, httpEntity,  Void.class);
+		
+		assertEquals(HttpStatus.OK, entity.getStatusCode());
+		Schwein schwein = Schwein.builder().id("012345678901234567890123456789111112").name("Piggy").gewicht(10).build();
+		verify(serviceMock, times(1)).speichern(schwein);
+		
+	}
+	@Test
+	public void test6() throws Exception{
+		
+		SchweinDTO dto = SchweinDTO.builder().id("012345678901234567890123456789111112").name("Piggy").gewicht(10).build();
+		HttpEntity<SchweinDTO> httpEntity = new HttpEntity<SchweinDTO>(dto);
+		
+		doThrow(new SchweineServiceException("Antipath")).when(serviceMock).speichern(any());
+		
+		ResponseEntity<Map<String, Object>> entity = restTemplate.exchange("/schweine", HttpMethod.PUT, httpEntity,  new ParameterizedTypeReference<Map<String, Object>>() {   });
+		
+		assertEquals(HttpStatus.BAD_REQUEST, entity.getStatusCode());
+		Map<String, Object> body = entity.getBody();
+		assertEquals("Antipath", body.get("message"));
+		
 	}
 }
