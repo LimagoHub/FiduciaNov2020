@@ -30,6 +30,7 @@ public class SchweinQueryController {
 	public ResponseEntity<SchweinDTO> findSchweinBy(@PathVariable String id) throws Exception{
 		return ResponseEntity.of(service.findeMitId(id).map(mapper::convert));
 	}
+	
 	@GetMapping(path = "", produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<List<SchweinDTO>> findeAlle() throws Exception{
 		return ResponseEntity.ok(mapper.convert(service.findeAlle()));

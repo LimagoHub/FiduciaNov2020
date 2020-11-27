@@ -18,21 +18,23 @@ public class SchweineServiceImpl implements SchweinService {
 
 	private final SchweinRepository repository;
 	private final SchweinEntityMapper mapper;
+	private final List<String> antipathen;
 
-	public SchweineServiceImpl(SchweinRepository repository, final SchweinEntityMapper mapper) {
+	public SchweineServiceImpl(SchweinRepository repository, final SchweinEntityMapper mapper, final List<String> antipathen) {
 		this.repository = repository;
 		this.mapper = mapper;
+		this.antipathen = antipathen;
 	}
 	
 	
 	@Override
 	public void speichern(Schwein schwein)  throws SchweineServiceException{
 		try {
+			if(schwein == null) throw new SchweineServiceException("Parameter darf nicht null sein");
+			if(antipathen.contains(schwein.getName())) throw new SchweineServiceException("Antipath");
 			repository.save(mapper.convert(schwein));
 		} catch (RuntimeException e) {
-			
-			e.printStackTrace();
-			throw new SchweineServiceException(e);
+			throw new SchweineServiceException("Server Error");
 		}
 	}
 	
